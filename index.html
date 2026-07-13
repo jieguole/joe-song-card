@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Dr You-Xiang (Joe) Song — Digital Business Card</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root{
+    --ink:#00305C;
+    --ink-2:#003D73;
+    --paper:#F7F8FA;
+    --brass:#5E86AC;
+    --brass-light:#AFC6DC;
+    --line: rgba(247,248,250,0.18);
+    --line-dark: rgba(0,48,92,0.10);
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:
+      radial-gradient(circle at 20% 15%, rgba(0,48,92,0.06), transparent 55%),
+      radial-gradient(circle at 85% 85%, rgba(0,48,92,0.05), transparent 50%),
+      var(--paper);
+    font-family:'Inter', sans-serif;
+    color:var(--ink);
+    padding:32px 16px;
+  }
+
+  .stage{
+    width:100%;
+    max-width:420px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:18px;
+  }
+
+  .hint{
+    font-family:'Inter', sans-serif;
+    font-weight:500;
+    font-size:11px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--ink);
+    opacity:0.55;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    background:none;
+    border:none;
+    padding:0;
+    cursor:pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .hint svg{width:14px;height:14px;opacity:0.7;}
+
+  .card-scene{
+    width:100%;
+    aspect-ratio:16/10;
+    perspective:1600px;
+    cursor:pointer;
+  }
+  .card{
+    position:relative;
+    width:100%;
+    height:100%;
+    transform-style:preserve-3d;
+    transition:transform 0.7s cubic-bezier(.2,.8,.2,1);
+  }
+  .card-scene:hover .card{ transform: translateY(-2px); }
+  .card.flipped{ transform: rotateY(180deg); }
+  .card.flipped:hover{ transform: rotateY(180deg) translateY(-2px); }
+
+  .face{
+    position:absolute;
+    inset:0;
+    -webkit-backface-visibility:hidden;
+    backface-visibility:hidden;
+    border-radius:18px;
+    box-shadow: 0 1px 2px rgba(11,27,51,0.06), 0 20px 45px -18px rgba(11,27,51,0.35);
+    overflow:hidden;
+  }
+
+  /* ---------- FRONT ---------- */
+  .front{
+    background: linear-gradient(155deg, var(--ink) 0%, var(--ink-2) 55%, #004B87 100%);
+    color:var(--paper);
+    padding:30px 32px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+  }
+  .globe-grid{
+    position:absolute;
+    inset:0;
+    opacity:0.16;
+    pointer-events:none;
+  }
+  .front-top{
+    position:relative;
+    display:flex;
+    justify-content:flex-start;
+  }
+  .mark{
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:10.5px;
+    letter-spacing:0.16em;
+    text-transform:uppercase;
+    color:var(--brass-light);
+    border:1px solid var(--line);
+    padding:5px 9px;
+    border-radius:100px;
+  }
+
+  .front-main{
+    position:relative;
+    margin-top:22px;
+  }
+  .eyebrow{
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:10.5px;
+    letter-spacing:0.14em;
+    text-transform:uppercase;
+    color:var(--brass-light);
+    margin-bottom:10px;
+  }
+  .name{
+    font-family:'Inter', sans-serif;
+    font-weight:700;
+    font-size:clamp(26px,6.5vw,34px);
+    line-height:1.12;
+    margin:0 0 6px 0;
+    letter-spacing:-0.02em;
+  }
+  .name em{
+    font-style:normal;
+    font-weight:600;
+    color:var(--brass-light);
+  }
+  .role{
+    font-size:clamp(11px, 3.4vw, 13.5px);
+    color:var(--paper);
+    opacity:0.82;
+    line-height:1.5;
+    max-width:100%;
+    white-space:nowrap;
+  }
+
+  .front-bottom{
+    position:relative;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    padding-top:18px;
+    border-top:1px solid var(--line);
+  }
+  .school{
+    font-size:11.5px;
+    line-height:1.45;
+    opacity:0.75;
+    max-width:70%;
+  }
+  .school strong{ display:block; color:var(--paper); opacity:1; font-weight:500; font-size:12px; }
+  .flip-cta{
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:10px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--brass-light);
+    display:flex;
+    align-items:center;
+    gap:6px;
+    white-space:nowrap;
+  }
+  .flip-cta svg{ width:12px; height:12px; }
+
+  /* ---------- BACK ---------- */
+  .back{
+    background: var(--paper);
+    color:var(--ink);
+    transform: rotateY(180deg);
+    padding:26px 28px;
+    display:flex;
+    gap:22px;
+    align-items:center;
+    border:1px solid var(--line-dark);
+  }
+  .back-info{
+    flex:1;
+    min-width:0;
+    display:flex;
+    flex-direction:column;
+    gap:12px;
+  }
+  .back-name{
+    font-family:'Inter', sans-serif;
+    font-size:19px;
+    font-weight:700;
+    letter-spacing:-0.01em;
+    line-height:1.2;
+  }
+  .back-field{
+    display:flex;
+    flex-direction:column;
+    gap:2px;
+  }
+  .back-field .label{
+    font-family:'Inter', sans-serif;
+    font-weight:600;
+    font-size:9px;
+    letter-spacing:0.12em;
+    text-transform:uppercase;
+    opacity:0.5;
+  }
+  .back-field .value{
+    font-size:12.5px;
+    word-break:break-word;
+    color:var(--ink);
+  }
+  .back-field a{ color:var(--ink); text-decoration:none; border-bottom:1px solid var(--brass); }
+
+  .qr-wrap{
+    flex-shrink:0;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+  }
+  .qr-box{
+    background:#fff;
+    padding:8px;
+    border-radius:10px;
+    border:1px solid var(--line-dark);
+    box-shadow:0 6px 16px -8px rgba(11,27,51,0.25);
+    width:104px;
+    height:104px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .qr-label{
+    font-family:'Inter', sans-serif;
+    font-weight:500;
+    font-size:8.5px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    opacity:0.55;
+    text-align:center;
+  }
+
+  .actions{
+    display:flex;
+    gap:10px;
+    width:100%;
+  }
+  .btn{
+    flex:1;
+    text-align:center;
+    font-family:'Inter', sans-serif;
+    font-size:13px;
+    font-weight:600;
+    padding:12px 16px;
+    border-radius:10px;
+    border:1px solid var(--line-dark);
+    background:#fff;
+    color:var(--ink);
+    text-decoration:none;
+    cursor:pointer;
+    transition:transform 0.15s ease, box-shadow 0.15s ease;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:7px;
+  }
+  .btn:hover{ transform:translateY(-1px); box-shadow:0 8px 18px -10px rgba(11,27,51,0.35); }
+  .btn.primary{ background:var(--ink); color:var(--paper); border-color:var(--ink); }
+  .btn svg{ width:15px; height:15px; }
+
+  @media (max-width:420px){
+    .card-scene{ aspect-ratio:auto; height:280px; }
+    .back{ padding:20px; gap:16px; }
+    .qr-box{ width:84px; height:84px; }
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .card, .btn{ transition:none !important; }
+  }
+
+  :focus-visible{ outline:2px solid var(--brass); outline-offset:2px; }
+
+  .front ::selection{ background: rgba(228,200,120,0.35); color: inherit; }
+  .back ::selection{ background: rgba(184,145,47,0.25); color: inherit; }
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <button class="hint" id="hint" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7M21 3v5h-5"/></svg>
+    Tap to flip card
+  </button>
+
+  <div class="card-scene" id="scene" role="button" tabindex="0" aria-label="Flip card">
+    <div class="card" id="card">
+
+      <!-- FRONT -->
+      <div class="face front">
+        <svg class="globe-grid" viewBox="0 0 400 260" preserveAspectRatio="none">
+          <ellipse cx="330" cy="60" rx="150" ry="150" fill="none" stroke="#7FC1EC" stroke-width="0.5"/>
+          <ellipse cx="330" cy="60" rx="100" ry="150" fill="none" stroke="#7FC1EC" stroke-width="0.5"/>
+          <ellipse cx="330" cy="60" rx="150" ry="90" fill="none" stroke="#7FC1EC" stroke-width="0.5"/>
+          <line x1="180" y1="60" x2="480" y2="60" stroke="#7FC1EC" stroke-width="0.5"/>
+        </svg>
+
+        <div class="front-top">
+          <span class="mark">Global Strategy</span>
+        </div>
+
+        <div class="front-main">
+          <div class="eyebrow">University of Auckland Business School</div>
+          <h1 class="name">You-Xiang (Joe) Song</h1>
+          <p class="role">Lecturer (Assistant Professor)<br>Dept. of Management and International Business</p>
+        </div>
+
+        <div class="front-bottom">
+          <div class="school">Auckland, New Zealand</div>
+          <div class="flip-cta">
+            Contact
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-3-6.7M21 3v5h-5"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <!-- BACK -->
+      <div class="face back">
+        <div class="back-info">
+          <div class="back-name">Dr You-Xiang (Joe) Song</div>
+
+          <div class="back-field">
+            <span class="label">Email</span>
+            <span class="value"><a href="mailto:joe.song@auckland.ac.nz" onclick="event.stopPropagation()">joe.song@auckland.ac.nz</a></span>
+          </div>
+
+          <div class="back-field">
+            <span class="label">Affiliation</span>
+            <span class="value">University of Auckland Business School</span>
+          </div>
+
+          <div class="back-field">
+            <span class="label">Research</span>
+            <span class="value">Multinational enterprises &amp; institutional complexity · Global strategy, geopolitics &amp; ESG</span>
+          </div>
+        </div>
+
+        <div class="qr-wrap">
+          <div class="qr-box" id="qrcode"></div>
+          <span class="qr-label">Scan for profile</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary" id="downloadVcf">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 20h16"/></svg>
+      Save Contact
+    </button>
+    <a class="btn" href="https://profiles.auckland.ac.nz/joe-song/about" target="_blank" rel="noopener" onclick="event.stopPropagation()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14L21 3"/></svg>
+      View Profile
+    </a>
+  </div>
+
+</div>
+
+<script>
+  const scene = document.getElementById('scene');
+  const card = document.getElementById('card');
+  const hint = document.getElementById('hint');
+
+  function toggleFlip(){
+    card.classList.toggle('flipped');
+    hint.lastChild.textContent = card.classList.contains('flipped') ? ' Tap to flip back' : ' Tap to flip card';
+  }
+  scene.addEventListener('click', toggleFlip);
+  scene.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); toggleFlip(); }
+  });
+  hint.addEventListener('click', toggleFlip);
+
+  // QR code -> profile page
+  try{
+    new QRCode(document.getElementById("qrcode"), {
+      text: "https://profiles.auckland.ac.nz/joe-song/about",
+      width: 88,
+      height: 88,
+      colorDark: "#00305C",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  } catch(err){
+    document.getElementById("qrcode").innerHTML = '<span style="font-size:9px;color:#999;padding:4px;text-align:center;">QR needs internet to load</span>';
+  }
+
+  // vCard download
+  document.getElementById('downloadVcf').addEventListener('click', function(e){
+    e.stopPropagation();
+    const vcard = [
+      "BEGIN:VCARD",
+      "VERSION:3.0",
+      "N:Song;You-Xiang (Joe);;Dr;",
+      "FN:Dr You-Xiang (Joe) Song",
+      "ORG:University of Auckland Business School",
+      "TITLE:Lecturer (Assistant Professor)",
+      "EMAIL;TYPE=WORK,INTERNET:joe.song@auckland.ac.nz",
+      "URL:https://profiles.auckland.ac.nz/joe-song/about",
+      "NOTE:Research: multinational enterprises, institutional complexity, global strategy, geopolitics, ESG",
+      "END:VCARD"
+    ].join("\r\n");
+    const blob = new Blob([vcard], { type: "text/vcard;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = "Joe_Song.vcf";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  });
+</script>
+
+</body>
+</html>
